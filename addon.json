@@ -1,0 +1,11 @@
+{
+	"title"		:	"TTT2 Clairvoyant",
+	"type"		:	"ServerContent",
+	"tags"		:	[ "fun" ],
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*"
+	]
+}

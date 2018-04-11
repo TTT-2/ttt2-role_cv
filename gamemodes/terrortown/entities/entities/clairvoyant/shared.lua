@@ -5,6 +5,30 @@ if SERVER then
    resource.AddFile("materials/vgui/ttt/sprite_cv.vmt")
 end
 
+-- important to add roles with this function,
+-- because it does more than just access the array ! e.g. updating other arrays
+AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES.CLAIRVOYANT or ROLES["CLAIRVOYANT"]
+	color = Color(255, 255, 102, 255), -- ...
+	dkcolor = Color(230, 230, 0, 255), -- ...
+	bgcolor = Color(0, 50, 0, 200), -- ...
+	name = "clairvoyant", -- just a unique name for the script to determine
+	printName = "Clairvoyant", -- The text that is printed to the player, e.g. in role alert
+	abbr = "cv", -- abbreviation
+	shop = false, -- can the role access the [C] shop ?
+	team = "clairvoyants", -- the team name: roles with same team name are working together
+	defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment
+	visibleForTraitors = false, -- other traitors can see this role / sync them with traitors / not necessary if role is in TEAM_TRAITOR
+    specialRoleFilter = true, -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
+    surviveBonus = 0, -- bonus multiplier for every survive while another player was killed
+    scoreKillsMultiplier = 1, -- multiplier for kill of player of another team
+    scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
+}, {
+    pct = 0.13, -- necessary: percentage of getting this role selected (per player)
+    maximum = 1, -- maximum amount of roles in a round
+    minPlayers = 8, -- minimum amount of players until this role is able to get selected
+    togglable = true -- option to toggle a role for a client if possible (F1 menu)
+})
+
 -- if sync of roles has finished
 if CLIENT then
     hook.Add("TTT2_FinishedSync", "CVInitT", function(first)
@@ -47,44 +71,7 @@ if CLIENT then
     end)
 end
 
--- optional
-CreateClientConVar("ttt_avoid_clairvoyant", "0", true, true) -- should be "ttt_avoid_" .. name ; if enabled: option to disable role if possible will be enabled
-
 if SERVER then
-
-	-- add CVars ! necessary for calculation
-	CreateConVar("ttt_clairvoyant_pct", "0.13", FCVAR_NOTIFY)  -- should be "ttt_" .. name .. "_pct"
-	CreateConVar("ttt_clairvoyant_max", "1")                   -- should be "ttt_" .. name .. "_max"
-	CreateConVar("ttt_clairvoyant_min_players", "8")           -- should be "ttt_" .. name .. "_min_players"
-
-	-- necessary to init roles in this way, because we need to wait until the ROLES array is initialized 
-	-- and every important function works properly
-	hook.Add("TTT2_RoleInit", "AddCVRole", function() -- unique hook identifier please
-		if not ROLES["CLAIRVOYANT"] then
-
-			-- important to add roles with this function,
-			-- because it does more than just access the array ! e.g. updating other arrays
-			AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES.CLAIRVOYANT or ROLES["CLAIRVOYANT"]
-				color = Color(255, 255, 102, 255), -- ...
-				dkcolor = Color(230, 230, 0, 255), -- ...
-				bgcolor = Color(0, 50, 0, 200), -- ...
-				name = "clairvoyant", -- just a unique name for the script to determine
-				printName = "Clairvoyant", -- The text that is printed to the player, e.g. in role alert
-				abbr = "cv", -- abbreviation
-				shop = false, -- can the role access the [C] shop ?
-				team = "clairvoyants", -- the team name: roles with same team name are working together
-				moreThanOne = false, -- this should always be false
-				defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment
-				visibleForTraitors = false, -- other traitors can see this role / sync them with traitors / not necessary if role is in TEAM_TRAITOR
-                specialRoleFilter = true, -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
-                surviveBonus = 0, -- bonus multiplier for every survive while another player was killed
-                scoreKillsMultiplier = 1, -- multiplier for kill of player of another team
-                scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
-			})
-		end
-	end)
-
-	--------
 
     -- function in gamemsg.lua
     local function GetPlayerFilter(pred)

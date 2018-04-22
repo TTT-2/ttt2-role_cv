@@ -27,7 +27,7 @@ AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES
     togglable = true -- option to toggle a role for a client if possible (F1 menu)
 })
 
-hook.Add("TTT2_FinishedSync", "CVInitT", function(first)
+hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
     if CLIENT and first then -- just on client and first init !
 
         -- setup here is not necessary but if you want to access the role data, you need to start here
@@ -116,13 +116,15 @@ else -- CLIENT
     indicator_col = Color(255, 255, 255, 130)
     indicator_mat_tbl = {}
 
-    hook.Add("TTT2_FinishedSync", "updateCVData", function(first)
-        indicator_mat_tbl = {}
+    hook.Add("TTT2_FinishedSync", "updateCVData", function(ply, first)
+        if first then
+            indicator_mat_tbl = {}
 
-        for _, v in pairs(ROLES) do
-            local mat = Material("vgui/ttt/sprite_" .. v.abbr)
+            for _, v in pairs(ROLES) do
+                local mat = Material("vgui/ttt/sprite_" .. v.abbr)
 
-            indicator_mat_tbl[v.index] = mat
+                indicator_mat_tbl[v.index] = mat
+            end
         end
     end)
     

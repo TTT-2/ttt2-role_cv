@@ -77,91 +77,30 @@ hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
 end)
 
 if SERVER then
-    hook.Add("TTT2_SpecialRoleFilter", "CVRoleFilter", function(ply)
-        for _, v in pairs(ROLES) do -- allow clairvoyant to receive the specific role of each player
-            if not ROLES.SIDEKICK or ROLES.SIDEKICK and v ~= ROLES.SIDEKICK then 
-                SendRoleList(v.index, ply ~= nil and ply or GetPlayerFilter(function(p) 
-                    return p:IsRole(ROLES.CLAIRVOYANT.index) 
-                end))
-            end
+    util.AddNetworkString("TTT2CVAskSpecialRole")
+    
+    net.Receive("TTT2CVAskSpecialRole", function(len, ply)
+        for _, v in pairs(player.GetAll()) do
+            local b = v:IsActive() and v:IsSpecial()
+            
+            -- TODO this should be done serverside. The roles of the players shouldn't be submitted by the server to the client until a ply is not dead. 
+            -- now everyone can access this NWBool!
+            v:SetNWBool("TTT2CVSpecial", b)
         end
     end)
 else -- CLIENT
-    -- TODO improve performance
-    --[[
-    hook.Add("PreDrawHalos", "AddCVHalos", function()
-       local client = LocalPlayer()
-
-       if client:GetRole() == ROLES.CLAIRVOYANT.index then
-          -- create table for each role
-          local tmp = {}
-
-          for _, v in pairs(ROLES) do
-             tmp[v.index] = {}
-          end
-
-          for _, v in pairs(player.GetAll()) do
-             if v ~= client and v:Alive() then
-                table.insert(tmp[v:GetRoleData().index], v)
-             end
-          end
-          
-          for k, _ in pairs(tmp) do
-             halo.Add(tmp[k], GetRoleByIndex(k).color, 0, 0, 2, true, false)
-          end
-       end
-    end)
-    ]]--
-    
-    indicator_col = Color(255, 255, 255, 130)
-    indicator_mat_tbl = {}
-
-    hook.Add("TTT2_FinishedSync", "updateCVData", function(ply, first)
-        if first then
-            indicator_mat_tbl = {}
-
-            for _, v in pairs(ROLES) do
-                local mat = Material("vgui/ttt/sprite_" .. v.abbr)
-
-                indicator_mat_tbl[v.index] = mat
-            end
-        end
+    hook.Add("TTTBeginRound", "CVBeginRound", function()
+        net.Start("TTT2CVAskSpecialRole")
+        net.SendToServer()
     end)
     
-    function GetPlayers()
-        local tmp = {}
-    
-        for _, v in pairs(player.GetAll()) do
-            if v:IsActive() then
-                table.insert(tmp, v)
-            end
-        end
+    hook.Add("TTTScoreboardRowColorForPlayer", "TTT2CVColoredScoreboard", function(ply)
+        local client = LocalPlayer()
         
-        return tmp
-    end
-    
-    hook.Add("PostDrawTranslucentRenderables", "PostDrawCVTrabsRend", function()
-        local client, pos, dir
-        
-        client = LocalPlayer()
-        
-        local trace = client:GetEyeTrace(MASK_SHOT)
-        local ent = trace.Entity
-
-        if not IsValid(ent) or ent.NoTarget or not ent:IsPlayer() then return end
-
-        if client:GetRole() == ROLES.CLAIRVOYANT.index then
-            dir = (client:GetForward() * -1)
-
-            pos = ent:GetPos()
-            pos.z = (pos.z + 74)
-
-            if ent ~= client then
-                if ent:IsActive() then
-                    local mat = indicator_mat_tbl[ent:GetRole()]
-                    
-                    render.SetMaterial(mat)
-                    render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
+        if client:GetRole() == ROLES.CLAIRVOYANT.index and ply ~= client then
+            if ply:IsActive() and ply:GetNWBool("TTT2CVSpecial") and ply:GetRole() ~= ROLES.DETECTIVE.index then
+                if not ROLES.SIDEKICK or ply:GetRole() ~= ROLES.SIDEKICK.index then
+                    return Color(204, 153, 255, 255)
                 end
             end
         end

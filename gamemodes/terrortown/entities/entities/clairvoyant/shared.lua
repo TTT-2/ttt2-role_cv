@@ -32,6 +32,18 @@ AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES
 })
 
 hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
+    if CLIENT then
+        if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 then
+            indicator_mat_tbl = {}
+
+            for _, v in pairs(ROLES) do
+                local mat = Material("vgui/ttt/sprite_" .. v.abbr)
+
+                indicator_mat_tbl[v.index] = mat
+            end
+        end
+    end
+
     if first then
         if SERVER then
             -- add a easy role filtering to receive all jesters
@@ -54,16 +66,6 @@ hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
                 hook.Add("TTT2_SIKI_CanAttackerSidekick", "CvSikiAtkHook", function(attacker, victim)
                     return attacker:GetRole() == ROLES.CLAIRVOYANT.index and victim:GetRole() == ROLES.JESTER.index
                 end)
-            end
-            
-            if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 then
-                indicator_mat_tbl = {}
-
-                for _, v in pairs(ROLES) do
-                    local mat = Material("vgui/ttt/sprite_" .. v.abbr)
-
-                    indicator_mat_tbl[v.index] = mat
-                end
             end
             
             initialized = true

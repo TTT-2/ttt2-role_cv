@@ -1,14 +1,13 @@
 AddCSLuaFile()
 
-if SERVER then
-   resource.AddFile("materials/vgui/ttt/icon_cv.vmt")
-   resource.AddFile("materials/vgui/ttt/sprite_cv.vmt")
-end
-        
-CreateConVar("ttt2_clairvoyant_mode", "1", FCVAR_ARCHIVE + FCVAR_REPLICATED)
+CreateConVar("ttt2_clairvoyant_mode", "1", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_REPLICATED)
 
-local initialized = false
-local indicator_mat_tbl = {}
+if SERVER then
+    resource.AddFile("materials/vgui/ttt/icon_cv.vmt")
+    resource.AddFile("materials/vgui/ttt/sprite_cv.vmt")
+end
+
+local indicator_cv_mat_tbl = {}
 
 -- important to add roles with this function,
 -- because it does more than just access the array ! e.g. updating other arrays
@@ -23,7 +22,8 @@ AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES
 	defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment
     surviveBonus = 0, -- bonus multiplier for every survive while another player was killed
     scoreKillsMultiplier = 1, -- multiplier for kill of player of another team
-    scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
+    scoreTeamKillsMultiplier = -8, -- multiplier for teamkill
+    specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
 }, {
     pct = 0.13, -- necessary: percentage of getting this role selected (per player)
     maximum = 1, -- maximum amount of roles in a round
@@ -32,43 +32,27 @@ AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES
 })
 
 hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
+    local conv = GetConVar("ttt2_clairvoyant_mode")
+
     if CLIENT then
-        if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 then
-            indicator_mat_tbl = {}
+        if conv:GetInt() == 0 then
+            indicator_cv_mat_tbl = {}
 
             for _, v in pairs(ROLES) do
                 local mat = Material("vgui/ttt/sprite_" .. v.abbr)
 
-                indicator_mat_tbl[v.index] = mat
+                indicator_cv_mat_tbl[v.index] = mat
             end
         end
     end
 
     if first then
         if SERVER then
-            -- add a easy role filtering to receive all jesters
-            -- but just do it, when the role was created, then update it with recommended function
-            -- theoretically this function is not necessary to call, but maybe there are some modifications
-            -- of other addons. So it's better to use this function 
-            -- because it calls hooks and is doing some networking
-            
-            if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 1 then
-                UpdateCustomRole("CLAIRVOYANT", {
-                    specialRoleFilter = false -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
-                })
-            else
-                UpdateCustomRole("CLAIRVOYANT", {
-                    specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
-                })
-            end
-            
             if ROLES.JESTER and ROLES.SIDEKICK then
                 hook.Add("TTT2_SIKI_CanAttackerSidekick", "CvSikiAtkHook", function(attacker, victim)
                     return attacker:GetRole() == ROLES.CLAIRVOYANT.index and victim:GetRole() == ROLES.JESTER.index
                 end)
             end
-            
-            initialized = true
         else
             -- setup here is not necessary but if you want to access the role data, you need to start here
             -- setup basic translation !
@@ -116,45 +100,34 @@ In Kombination mit der SIDEKICK Rolle und der JESTER Rolle bekommst du automatis
             LANG.AddToLanguage("Deutsch", "set_avoid_" .. ROLES.CLAIRVOYANT.abbr, "Vermeide als Hellseher ausgewählt zu werden!")
             LANG.AddToLanguage("Deutsch", "set_avoid_" .. ROLES.CLAIRVOYANT.abbr .. "_tip", 
                 [[Aktivieren, um beim Server anzufragen, nicht als Hellseher ausgewählt zu werden. Das bedeuted nicht, dass du öfter Traitor wirst!]])
-                
-            initialized = true
         end
     end
 end)
 
 if SERVER then
-    util.AddNetworkString("TTT2CVAskSpecialRole")
-    
-    net.Receive("TTT2CVAskSpecialRole", function(len, ply)
-        for _, v in pairs(player.GetAll()) do
-            local b = v:IsActive() and v:IsSpecial()
-            
-            -- TODO this should be done serverside. The roles of the players shouldn't be submitted by the server to the client until a ply is not dead. 
-            -- now everyone can access this NWBool!
-            v:SetNWBool("TTT2CVSpecial", b)
-        end
-    end)
-    
     hook.Add("TTT2_SpecialRoleFilter", "CVRoleFilter", function(ply)
         if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 then
             for _, v in pairs(ROLES) do -- allow clairvoyant to receive the specific role of each player
-                if not ROLES.SIDEKICK or ROLES.SIDEKICK and v ~= ROLES.SIDEKICK then 
-                    SendRoleList(v.index, ply ~= nil and ply or GetPlayerFilter(function(p) 
+                if not ROLES.SIDEKICK or v ~= ROLES.SIDEKICK then 
+                    SendRoleList(v.index, ply or GetPlayerFilter(function(p) 
                         return p:IsRole(ROLES.CLAIRVOYANT.index) 
                     end))
                 end
             end
+        else
+            for _, v in pairs(player.GetAll()) do
+                SendConfirmedTraitors(ply)
+            
+                local b = v:IsActive() and v:IsSpecial()
+                
+                -- TODO this should be done serverside. The roles of the players shouldn't be submitted by the server to the client until a ply is not dead. 
+                -- now everyone can access this NWBool!
+                v:SetNWBool("TTT2CVSpecial", b)
+            end
         end
     end)
 else -- CLIENT
-    -- mode 0
-
-    hook.Add("TTTBeginRound", "CVBeginRound", function()
-        if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 1 then
-            net.Start("TTT2CVAskSpecialRole")
-            net.SendToServer()
-        end
-    end)
+    -- mode 1
     
     hook.Add("TTTScoreboardRowColorForPlayer", "TTT2CVColoredScoreboard", function(ply)
         if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 1 then
@@ -170,7 +143,7 @@ else -- CLIENT
         end
     end)
     
-    -- mode 1
+    -- mode 0
     
     function GetPlayers()
         local tmp = {}
@@ -185,7 +158,7 @@ else -- CLIENT
     end
     
     hook.Add("PostDrawTranslucentRenderables", "PostDrawCVTrabsRend", function()
-        if initialized and GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 then
+        if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 and #indicator_cv_mat_tbl > 0 then
             local client, pos, dir
             
             client = LocalPlayer()
@@ -203,7 +176,7 @@ else -- CLIENT
 
                 if ent ~= client then
                     if ent:IsActive() then
-                        local mat = indicator_mat_tbl[ent:GetRole()]
+                        local mat = indicator_cv_mat_tbl[ent:GetRole()]
                         
                         if mat then
                             render.SetMaterial(mat)

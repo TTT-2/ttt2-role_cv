@@ -1,11 +1,11 @@
-AddCSLuaFile()
-
-CreateConVar("ttt2_clairvoyant_mode", "1", FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_REPLICATED)
-
 if SERVER then
+    AddCSLuaFile()
+    
     resource.AddFile("materials/vgui/ttt/icon_cv.vmt")
     resource.AddFile("materials/vgui/ttt/sprite_cv.vmt")
 end
+
+CreateConVar("ttt2_clairvoyant_mode", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_SERVER_CAN_EXECUTE})
 
 local indicator_cv_mat_tbl = {}
 

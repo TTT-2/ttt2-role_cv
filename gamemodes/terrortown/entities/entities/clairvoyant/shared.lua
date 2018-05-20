@@ -8,6 +8,7 @@ end
 CreateConVar("ttt2_clairvoyant_mode", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_SERVER_CAN_EXECUTE})
 
 local indicator_cv_mat_tbl = {}
+local indicator_cv_col = Color(255, 255, 255, 130)
 
 -- important to add roles with this function,
 -- because it does more than just access the array ! e.g. updating other arrays
@@ -157,9 +158,9 @@ else -- CLIENT
         return tmp
     end
     
-    hook.Add("PostDrawTranslucentRenderables", "PostDrawCVTrabsRend", function()
+    hook.Add("PostDrawTranslucentRenderables", "PostDrawCVTransRend", function()
         if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 and #indicator_cv_mat_tbl > 0 then
-            local client, pos, dir
+            local client, dir, pos
             
             client = LocalPlayer()
             
@@ -168,19 +169,23 @@ else -- CLIENT
 
             if not IsValid(ent) or ent.NoTarget or not ent:IsPlayer() then return end
 
-            if client:GetRole() == ROLES.CLAIRVOYANT.index then
+            if client:IsActive() and client:GetRole() == ROLES.CLAIRVOYANT.index then
                 dir = (client:GetForward() * -1)
 
                 pos = ent:GetPos()
-                pos.z = (pos.z + 74)
+                pos.z = pos.z + 74
 
                 if ent ~= client then
                     if ent:IsActive() then
-                        local mat = indicator_cv_mat_tbl[ent:GetRole()]
+                        local role = ent:GetRole()
+                        if role <= 0 then
+                            role = ROLES.INNOCENT.index
+                        end
                         
+                        local mat = indicator_cv_mat_tbl[role]
                         if mat then
                             render.SetMaterial(mat)
-                            render.DrawQuadEasy(pos, dir, 8, 8, indicator_col, 180)
+                            render.DrawQuadEasy(pos, dir, 8, 8, indicator_cv_col, 180)
                         end
                     end
                 end

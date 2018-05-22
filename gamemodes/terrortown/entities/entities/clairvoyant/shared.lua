@@ -176,8 +176,11 @@ else -- CLIENT
                 pos.z = pos.z + 74
 
                 if ent ~= client then
-                    if ent:IsActive() then
+                    if ent.GetRole and ent:IsActive() then
                         local role = ent:GetRole()
+						
+						if not role then return end -- sometimes strange things happens... -- gmod, u know
+						
                         if role <= 0 then
                             role = ROLES.INNOCENT.index
                         end

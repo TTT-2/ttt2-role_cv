@@ -1,14 +1,17 @@
+local indicator_cv_mat_tbl
+local indicator_cv_col
+
 if SERVER then
     AddCSLuaFile()
     
     resource.AddFile("materials/vgui/ttt/icon_cv.vmt")
     resource.AddFile("materials/vgui/ttt/sprite_cv.vmt")
+else
+	local indicator_cv_mat_tbl = {}
+	local indicator_cv_col = Color(255, 255, 255, 130)
 end
 
 CreateConVar("ttt2_clairvoyant_mode", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_SERVER_CAN_EXECUTE})
-
-local indicator_cv_mat_tbl = {}
-local indicator_cv_col = Color(255, 255, 255, 130)
 
 -- important to add roles with this function,
 -- because it does more than just access the array ! e.g. updating other arrays
@@ -51,7 +54,9 @@ hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
         if SERVER then
             if ROLES.JESTER and ROLES.SIDEKICK then
                 hook.Add("TTT2_SIKI_CanAttackerSidekick", "CvSikiAtkHook", function(attacker, victim)
-                    return attacker:GetRole() == ROLES.CLAIRVOYANT.index and victim:GetRole() == ROLES.JESTER.index
+					if attacker:GetRole() == ROLES.CLAIRVOYANT.index and victim:GetRole() == ROLES.JESTER.index then
+						return true
+					end
                 end)
             end
         else
@@ -146,53 +151,41 @@ else -- CLIENT
     
     -- mode 0
     
-    function GetPlayers()
-        local tmp = {}
-    
-        for _, v in pairs(player.GetAll()) do
-            if v:IsActive() then
-                table.insert(tmp, v)
-            end
-        end
-        
-        return tmp
-    end
-    
     hook.Add("PostDrawTranslucentRenderables", "PostDrawCVTransRend", function()
+		local client = LocalPlayer()
+		
+		if not client:IsActive() or client:GetRole() ~= ROLES.CLAIRVOYANT.index then return end
+	
         if GetConVar("ttt2_clairvoyant_mode"):GetInt() == 0 and #indicator_cv_mat_tbl > 0 then
-            local client, dir, pos
-            
-            client = LocalPlayer()
+            local dir, pos
             
             local trace = client:GetEyeTrace(MASK_SHOT)
             local ent = trace.Entity
 
             if not IsValid(ent) or ent.NoTarget or not ent:IsPlayer() then return end
+			
+			dir = (client:GetForward() * -1)
 
-            if client:IsActive() and client:GetRole() == ROLES.CLAIRVOYANT.index then
-                dir = (client:GetForward() * -1)
+			pos = ent:GetPos()
+			pos.z = pos.z + 74
 
-                pos = ent:GetPos()
-                pos.z = pos.z + 74
-
-                if ent ~= client then
-                    if ent.GetRole and ent:IsActive() then
-                        local role = ent:GetRole()
-						
-						if not role then return end -- sometimes strange things happens... -- gmod, u know
-						
-                        if role <= 0 then
-                            role = ROLES.INNOCENT.index
-                        end
-                        
-                        local mat = indicator_cv_mat_tbl[role]
-                        if mat then
-                            render.SetMaterial(mat)
-                            render.DrawQuadEasy(pos, dir, 8, 8, indicator_cv_col, 180)
-                        end
-                    end
-                end
-            end
+			if ent ~= client then
+				if ent.GetRole and ent:IsActive() then
+					local role = ent:GetRole()
+					
+					if not role then return end -- sometimes strange things happens... -- gmod, u know
+					
+					if role <= 0 then
+						role = ROLES.INNOCENT.index
+					end
+					
+					local mat = indicator_cv_mat_tbl[role]
+					if mat then
+						render.SetMaterial(mat)
+						render.DrawQuadEasy(pos, dir, 8, 8, indicator_cv_col, 180)
+					end
+				end
+			end
         end
     end)
 end

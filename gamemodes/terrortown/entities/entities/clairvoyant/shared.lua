@@ -13,27 +13,29 @@ end
 
 CreateConVar("ttt2_clairvoyant_mode", "1", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_SERVER_CAN_EXECUTE})
 
--- important to add roles with this function,
--- because it does more than just access the array ! e.g. updating other arrays
-AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES.CLAIRVOYANT or ROLES["CLAIRVOYANT"]
-	color = Color(239, 220, 66, 255), -- ...
-	dkcolor = Color(120, 135, 33, 255), -- ...
-	bgcolor = Color(0, 50, 0, 200), -- ...
-	name = "clairvoyant", -- just a unique name for the script to determine
-	printName = "Clairvoyant", -- The text that is printed to the player, e.g. in role alert
-	abbr = "cv", -- abbreviation
-	team = "clairvoyants", -- the team name: roles with same team name are working together
-	defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment
-    surviveBonus = 0, -- bonus multiplier for every survive while another player was killed
-    scoreKillsMultiplier = 1, -- multiplier for kill of player of another team
-    scoreTeamKillsMultiplier = -8, -- multiplier for teamkill
-    specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
-}, {
-    pct = 0.13, -- necessary: percentage of getting this role selected (per player)
-    maximum = 1, -- maximum amount of roles in a round
-    minPlayers = 8, -- minimum amount of players until this role is able to get selected
-    togglable = true -- option to toggle a role for a client if possible (F1 menu)
-})
+hook.Add("Initialize", "TTT2InitCRoleCv", function()
+	-- important to add roles with this function,
+	-- because it does more than just access the array ! e.g. updating other arrays
+	AddCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => ROLES.CLAIRVOYANT or ROLES["CLAIRVOYANT"]
+		color = Color(239, 220, 66, 255), -- ...
+		dkcolor = Color(120, 135, 33, 255), -- ...
+		bgcolor = Color(0, 50, 0, 200), -- ...
+		name = "clairvoyant", -- just a unique name for the script to determine
+		printName = "Clairvoyant", -- The text that is printed to the player, e.g. in role alert
+		abbr = "cv", -- abbreviation
+		team = "clairvoyants", -- the team name: roles with same team name are working together
+		defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment
+		surviveBonus = 0, -- bonus multiplier for every survive while another player was killed
+		scoreKillsMultiplier = 1, -- multiplier for kill of player of another team
+		scoreTeamKillsMultiplier = -8, -- multiplier for teamkill
+		specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
+	}, {
+		pct = 0.13, -- necessary: percentage of getting this role selected (per player)
+		maximum = 1, -- maximum amount of roles in a round
+		minPlayers = 8, -- minimum amount of players until this role is able to get selected
+		togglable = true -- option to toggle a role for a client if possible (F1 menu)
+	})
+end)
 
 hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
     local conv = GetConVar("ttt2_clairvoyant_mode")
@@ -58,6 +60,16 @@ hook.Add("TTT2_FinishedSync", "CVInitT", function(ply, first)
 						return true
 					end
                 end)
+				
+				hook.Add("TTT2PreventJesterDeath", "CvSikiJesPrevDeath", function(victim)
+					local attacker = victim.jesterKiller
+					
+					if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActive() then
+						if attacker:GetRole() == ROLES.CLAIRVOYANT.index and victim:GetRole() == ROLES.JESTER.index then
+							return true
+						end
+					end
+				end)
             end
         else
             -- setup here is not necessary but if you want to access the role data, you need to start here

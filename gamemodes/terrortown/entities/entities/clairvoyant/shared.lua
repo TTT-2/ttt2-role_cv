@@ -21,7 +21,6 @@ hook.Add("Initialize", "TTT2InitCRoleCv", function()
 		dkcolor = Color(120, 135, 33, 255), -- ...
 		bgcolor = Color(0, 50, 0, 200), -- ...
 		name = "clairvoyant", -- just a unique name for the script to determine
-		printName = "Clairvoyant", -- The text that is printed to the player, e.g. in role alert
 		abbr = "cv", -- abbreviation
 		team = "clairvoyants", -- the team name: roles with same team name are working together
 		defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment

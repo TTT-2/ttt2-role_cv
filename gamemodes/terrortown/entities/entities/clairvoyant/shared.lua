@@ -116,8 +116,10 @@ else -- CLIENT
 	hook.Add("TTTScoreboardRowColorForPlayer", "TTT2CVColoredScoreboard", function(ply)
 		local client = LocalPlayer()
 
-		if client:GetSubRole() == ROLE_CLAIRVOYANT and ply ~= client
-		and ply:IsActive() and ply.cv_specialRole
+		if client:GetSubRole() == ROLE_CLAIRVOYANT
+		and ply ~= client
+		and not ply:GetForceSpec()
+		and ply.cv_specialRole
 		and not ply:IsSpecial()
 		then
 			return Color(204, 153, 255, 255)

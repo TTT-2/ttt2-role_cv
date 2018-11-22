@@ -33,7 +33,7 @@ end)
 
 hook.Add("TTT2FinishedLoading", "CVInitT", function()
 	if SERVER then
-		if ROLES.JESTER and ROLES.SIDEKICK then -- could also be done in initialize hook
+		if JESTER and SIDEKICK then -- could also be done in initialize hook
 			hook.Add("TTT2SIKIAddSidekick", "CvSikiAtkHook", function(attacker, victim)
 				if attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER then
 					return true

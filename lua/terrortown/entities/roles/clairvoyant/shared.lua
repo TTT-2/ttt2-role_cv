@@ -4,30 +4,31 @@ if SERVER then
 	resource.AddFile("materials/vgui/ttt/dynamic/roles/icon_cv.vmt")
 end
 
--- important to add roles with this function,
--- because it does more than just access the array ! e.g. updating other arrays
-InitCustomRole("CLAIRVOYANT", { -- first param is access for ROLES array => CLAIRVOYANT or ROLES["CLAIRVOYANT"]
-		color = Color(94, 76, 118, 255), -- ...
-		dkcolor = Color(52, 32, 78, 255), -- ...
-		bgcolor = Color(174, 168, 106, 255), -- ...
-		abbr = "cv", -- abbreviation
-		defaultTeam = TEAM_INNOCENT, -- the team name: roles with same team name are working together
-		defaultEquipment = INNO_EQUIPMENT, -- here you can set up your own default equipment
-		surviveBonus = 0, -- bonus multiplier for every survive while another player was killed
-		scoreKillsMultiplier = 1, -- multiplier for kill of player of another team
-		scoreTeamKillsMultiplier = -8, -- multiplier for teamkill
-		specialRoleFilter = true, -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
-		unknownTeam = true -- player don't know their teammates
-	}, {
-		pct = 0.13, -- necessary: percentage of getting this role selected (per player)
-		maximum = 1, -- maximum amount of roles in a round
-		minPlayers = 8, -- minimum amount of players until this role is able to get selected
-		togglable = true -- option to toggle a role for a client if possible (F1 menu)
-})
+ROLE.color = Color(94, 76, 118, 255) -- ...
+ROLE.dkcolor = Color(52, 32, 78, 255) -- ...
+ROLE.bgcolor = Color(174, 168, 106, 255) -- ...
+ROLE.abbr = "cv" -- abbreviation
+ROLE.defaultEquipment = INNO_EQUIPMENT -- here you can set up your own default equipment
+ROLE.surviveBonus = 0 -- bonus multiplier for every survive while another player was killed
+ROLE.scoreKillsMultiplier = 1 -- multiplier for kill of player of another team
+ROLE.scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
+ROLE.specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
+ROLE.unknownTeam = true -- player don't know their teammates
+
+ROLE.conVarData = {
+	pct = 0.13, -- necessary: percentage of getting this role selected (per player)
+	maximum = 1, -- maximum amount of roles in a round
+	minPlayers = 8, -- minimum amount of players until this role is able to get selected
+	togglable = true -- option to toggle a role for a client if possible (F1 menu)
+}
 
 -- now link this subrole with its baserole
 hook.Add("TTT2BaseRoleInit", "TTT2ConBRIWithCV", function()
-	SetBaseRole(CLAIRVOYANT, ROLE_INNOCENT)
+	CLAIRVOYANT:SetBaseRole(ROLE_INNOCENT)
+end)
+
+hook.Add("TTT2RolesLoaded", "AddClairvoyantTeam", function()
+	CLAIRVOYANT.defaultTeam = TEAM_INNOCENT
 end)
 
 hook.Add("TTT2FinishedLoading", "CVInitT", function()

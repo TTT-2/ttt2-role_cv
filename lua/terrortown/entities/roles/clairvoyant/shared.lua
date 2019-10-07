@@ -4,26 +4,26 @@ if SERVER then
 	resource.AddFile("materials/vgui/ttt/dynamic/roles/icon_cv.vmt")
 end
 
-ROLE.color = Color(94, 76, 118, 255) -- ...
-ROLE.dkcolor = Color(52, 32, 78, 255) -- ...
-ROLE.bgcolor = Color(174, 168, 106, 255) -- ...
-ROLE.abbr = "cv" -- abbreviation
-ROLE.surviveBonus = 0 -- bonus multiplier for every survive while another player was killed
-ROLE.scoreKillsMultiplier = 1 -- multiplier for kill of player of another team
-ROLE.scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
-ROLE.specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
-ROLE.unknownTeam = true -- player don't know their teammates
-
-ROLE.conVarData = {
-	pct = 0.13, -- necessary: percentage of getting this role selected (per player)
-	maximum = 1, -- maximum amount of roles in a round
-	minPlayers = 8, -- minimum amount of players until this role is able to get selected
-	togglable = true -- option to toggle a role for a client if possible (F1 menu)
-}
-
 function ROLE:PreInitialize()
+	self.color = Color(94, 76, 118, 255) -- ...
+	self.dkcolor = Color(52, 32, 78, 255) -- ...
+	self.bgcolor = Color(174, 168, 106, 255) -- ...
+	self.abbr = "cv" -- abbreviation
+	self.surviveBonus = 0 -- bonus multiplier for every survive while another player was killed
+	self.scoreKillsMultiplier = 1 -- multiplier for kill of player of another team
+	self.scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
+	self.specialRoleFilter = true -- enables special role filtering hook: 'TTT2_SpecialRoleFilter'; be careful: this role will be excepted from receiving every role as innocent
+	self.unknownTeam = true -- player don't know their teammates
+
 	self.defaultTeam = TEAM_INNOCENT
 	self.defaultEquipment = INNO_EQUIPMENT -- here you can set up your own default equipment
+	
+	self.conVarData = {
+		pct = 0.13, -- necessary: percentage of getting this role selected (per player)
+		maximum = 1, -- maximum amount of roles in a round
+		minPlayers = 8, -- minimum amount of players until this role is able to get selected
+		togglable = true -- option to toggle a role for a client if possible (F1 menu)
+	}
 end
 
 function ROLE:Initialize()

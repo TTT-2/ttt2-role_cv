@@ -82,26 +82,64 @@ In Kombination mit der SIDEKICK Rolle und der JESTER Rolle bekommst du automatis
 	end
 end
 
+hook.Add("TTTUlxDynamicRCVars", "TTTUlxDynamicCvCVars", function(tbl)
+	tbl[ROLE_CLAIRVOYANT] = tbl[ROLE_CLAIRVOYANT] or {}
+
+	table.insert(tbl[ROLE_CLAIRVOYANT], {cvar = "ttt2_cv_visible", slider = true, min = 1, max = 100, desc = "Sets the percentage of visible player's roles"})
+end)
+
 if SERVER then
 	util.AddNetworkString("TTT2CVSpecialRole")
+	
+	local ttt2_cv_visible = CreateConVar("ttt2_cv_visible", "100", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Sets the percentage of visible player's roles")
 
 	hook.Add("TTT2SpecialRoleSyncing", "CVRoleFilter", function(ply)
 		local tmp = {}
 		local plys = (IsValid(ply) and ply:IsPlayer() and ply:GetSubRole() == ROLE_CLAIRVOYANT) and {ply} or GetSubRoleFilter(ROLE_CLAIRVOYANT)
+		local activeAmount = 0
 
 		for _, v in ipairs(player.GetAll()) do
 			local subrole = v:GetSubRole()
 
-			if v:IsActive() and subrole ~= ROLE_INNOCENT and subrole ~= ROLE_TRAITOR and not table.HasValue(plys, v) then
+			if not v:IsActive() or not v:IsTerror() then continue end
+			
+			activeAmount = activeAmount + 1
+
+			if subrole ~= ROLE_INNOCENT and subrole ~= ROLE_TRAITOR and not table.HasValue(plys, v) then
 				tmp[#tmp + 1] = v:EntIndex()
+			end
+		end
+		
+		local tmp2 = tmp
+		
+		local cvrand = ttt2_cv_visible:GetInt()
+		if cvrand < 100 then
+			-- now calculate amount of visible roles
+			activeAmount = math.min(math.ceil(activeAmount / (cvrand * 0.01)), activeAmount)
+			
+			local tmpCount = #tmp
+			
+			activeAmount = math.min(activeAmount, tmpCount)
+			
+			-- now randomize the new list
+			if tmpCount ~= activeAmount then
+				tmp2 = {}
+				
+				for i = 1, activeAmount do
+					local val = math.random(1, #tmp)
+					
+					tmp2[i] = tmp[val]
+					
+					table.remove(tmp, val)
+				end
 			end
 		end
 
 		for _, v in ipairs(plys) do
 			net.Start("TTT2CVSpecialRole")
-			net.WriteUInt(#tmp, 8)
+			net.WriteUInt(#tmp2, 8)
 
-			for _, eidx in ipairs(tmp) do
+			for _, eidx in ipairs(tmp2) do
 				net.WriteUInt(eidx, 16) -- 16 bits
 			end
 

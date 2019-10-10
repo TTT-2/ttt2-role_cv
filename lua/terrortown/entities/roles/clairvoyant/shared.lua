@@ -137,9 +137,7 @@ if SERVER then
 			-- now calculate amount of visible roles
 			local tmpCount = #tmp
 			local activeAmount = math.min(math.ceil(tmpCount * (cvrand * 0.01)), tmpCount)
-			
-			print(activeAmount .. " --> " .. tmpCount .. " / " .. (cvrand * 0.01))
-			
+						
 			-- now randomize the new list
 			if tmpCount ~= activeAmount then
 				tmp2 = {}
@@ -155,7 +153,6 @@ if SERVER then
 		end
 		
 		cachedTable = tmp2
-		PrintTable(cachedTable)
 	end)
 else -- CLIENT
 	hook.Add("TTTScoreboardRowColorForPlayer", "TTT2CVColoredScoreboard", function(ply)
@@ -172,6 +169,11 @@ else -- CLIENT
 	end)
 
 	net.Receive("TTT2CVSpecialRole", function()
+		-- reset
+		for _, v in ipairs(player.GetAll()) do
+			v.cv_specialRole = nil
+		end
+		
 		local amount = net.ReadUInt(8)
 		local rs = GetRoundState()
 
@@ -186,7 +188,7 @@ else -- CLIENT
 		end
 	end)
 	
-	hook.Add("TTTPrepareRound", "TTT2CVPrepRound", function()
+	hook.Add("TTTEndRound", "TTT2CVEndRound", function()
 		for _, v in ipairs(player.GetAll()) do
 			v.cv_specialRole = nil
 		end

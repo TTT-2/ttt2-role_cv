@@ -88,15 +88,38 @@ hook.Add("TTTUlxDynamicRCVars", "TTTUlxDynamicCvCVars", function(tbl)
 	table.insert(tbl[ROLE_CLAIRVOYANT], {cvar = "ttt2_cv_visible", slider = true, min = 1, max = 100, desc = "Sets the percentage of visible player's roles"})
 end)
 
+local cachedTable = nil
+
 if SERVER then
 	util.AddNetworkString("TTT2CVSpecialRole")
 	
 	local ttt2_cv_visible = CreateConVar("ttt2_cv_visible", "100", {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "Sets the percentage of visible player's roles")
 
-	hook.Add("TTT2SpecialRoleSyncing", "CVRoleFilter", function(ply)
-		local tmp = {}
+	hook.Add("TTT2SpecialRoleSyncing", "CVRoleFilter", function(ply)		
+		if not cachedTable then return end
+		
 		local plys = (IsValid(ply) and ply:IsPlayer() and ply:GetSubRole() == ROLE_CLAIRVOYANT) and {ply} or GetSubRoleFilter(ROLE_CLAIRVOYANT)
+				
+		for _, v in ipairs(plys) do
+			net.Start("TTT2CVSpecialRole")
+			net.WriteUInt(#cachedTable, 8)
 
+			for _, eidx in ipairs(cachedTable) do
+				net.WriteUInt(eidx, 16) -- 16 bits
+			end
+
+			net.Send(v)
+		end
+	end)
+	
+	hook.Add("TTTEndRound", "TTT2CVEndRound", function()
+		cachedTable = nil
+	end)
+	
+	hook.Add("TTTBeginRound", "TTT2CVBeginRound", function()
+		local plys = (IsValid(ply) and ply:IsPlayer() and ply:GetSubRole() == ROLE_CLAIRVOYANT) and {ply} or GetSubRoleFilter(ROLE_CLAIRVOYANT)
+		local tmp = {}
+		
 		for _, v in ipairs(player.GetAll()) do
 			if not v:IsActive() or not v:IsTerror() then continue end
 			
@@ -115,6 +138,8 @@ if SERVER then
 			local tmpCount = #tmp
 			local activeAmount = math.min(math.ceil(tmpCount * (cvrand * 0.01)), tmpCount)
 			
+			print(activeAmount .. " --> " .. tmpCount .. " / " .. (cvrand * 0.01))
+			
 			-- now randomize the new list
 			if tmpCount ~= activeAmount then
 				tmp2 = {}
@@ -128,17 +153,9 @@ if SERVER then
 				end
 			end
 		end
-
-		for _, v in ipairs(plys) do
-			net.Start("TTT2CVSpecialRole")
-			net.WriteUInt(#tmp2, 8)
-
-			for _, eidx in ipairs(tmp2) do
-				net.WriteUInt(eidx, 16) -- 16 bits
-			end
-
-			net.Send(v)
-		end
+		
+		cachedTable = tmp2
+		PrintTable(cachedTable)
 	end)
 else -- CLIENT
 	hook.Add("TTTScoreboardRowColorForPlayer", "TTT2CVColoredScoreboard", function(ply)
@@ -154,7 +171,7 @@ else -- CLIENT
 		end
 	end)
 
-	net.Receive("TTT2CVSpecialRole", function(len)
+	net.Receive("TTT2CVSpecialRole", function()
 		local amount = net.ReadUInt(8)
 		local rs = GetRoundState()
 
@@ -168,10 +185,10 @@ else -- CLIENT
 			end
 		end
 	end)
-
-	hook.Add("TTTEndRound", "TTT2CVEntRound", function()
+	
+	hook.Add("TTTPrepareRound", "TTT2CVPrepRound", function()
 		for _, v in ipairs(player.GetAll()) do
-			v.cv_specialRole = false
+			v.cv_specialRole = nil
 		end
 	end)
 end

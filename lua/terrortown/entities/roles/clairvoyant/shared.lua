@@ -96,16 +96,13 @@ if SERVER then
 	hook.Add("TTT2SpecialRoleSyncing", "CVRoleFilter", function(ply)
 		local tmp = {}
 		local plys = (IsValid(ply) and ply:IsPlayer() and ply:GetSubRole() == ROLE_CLAIRVOYANT) and {ply} or GetSubRoleFilter(ROLE_CLAIRVOYANT)
-		local activeAmount = 0
 
 		for _, v in ipairs(player.GetAll()) do
-			local subrole = v:GetSubRole()
-
 			if not v:IsActive() or not v:IsTerror() then continue end
 			
-			activeAmount = activeAmount + 1
+			local subrole = v:GetSubRole()
 
-			if subrole ~= ROLE_INNOCENT and subrole ~= ROLE_TRAITOR and not table.HasValue(plys, v) then
+			if subrole ~= ROLE_INNOCENT and subrole ~= ROLE_TRAITOR and v:GetBaseRole() ~= ROLE_DETECTIVE and not table.HasValue(plys, v) then
 				tmp[#tmp + 1] = v:EntIndex()
 			end
 		end
@@ -115,11 +112,8 @@ if SERVER then
 		local cvrand = ttt2_cv_visible:GetInt()
 		if cvrand < 100 then
 			-- now calculate amount of visible roles
-			activeAmount = math.min(math.ceil(activeAmount / (cvrand * 0.01)), activeAmount)
-			
 			local tmpCount = #tmp
-			
-			activeAmount = math.min(activeAmount, tmpCount)
+			local activeAmount = math.min(math.ceil(tmpCount * (cvrand * 0.01)), tmpCount)
 			
 			-- now randomize the new list
 			if tmpCount ~= activeAmount then

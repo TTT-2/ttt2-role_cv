@@ -28,27 +28,26 @@ end
 function ROLE:Initialize()
 	roles.SetBaseRole(self, ROLE_INNOCENT)
 
-	if SERVER then
-		if JESTER and SIDEKICK then -- could also be done in initialize hook
-			hook.Add("TTT2SIKIAddSidekick", "CvSikiAtkHook", function(attacker, victim)
-				if attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER then
-					return true
-				end
-			end)
+	if SERVER and JESTER and SIDEKICK then -- could also be done in initialize hook
+		hook.Add("TTT2SIKIAddSidekick", "CvSikiAtkHook", function(attacker, victim)
+			if attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER then
+				return true
+			end
+		end)
 
-			hook.Add("TTT2PreventJesterDeath", "CvSikiJesPrevDeath", function(victim)
-				local attacker = victim.jesterKiller
+		hook.Add("TTT2PreventJesterDeath", "CvSikiJesPrevDeath", function(victim)
+			local attacker = victim.jesterKiller
 
-				if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActive()
-				and attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER
-				then
-					return true
-				end
-			end)
-		end
-	else
-		-- setup here is not necessary but if you want to access the role data, you need to start here
-		-- setup basic translation !
+			if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActive()
+			and attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER
+			then
+				return true
+			end
+		end)
+	end
+
+	if CLIENT then
+		-- Role specific language elements
 		LANG.AddToLanguage("English", self.name, "Clairvoyant")
 		LANG.AddToLanguage("English", "info_popup_" .. self.name,
 			[[You are the Clairvoyant!
@@ -62,9 +61,6 @@ His goal is to survive the traitors as an innocent.
 
 In combination with the SIDEKICK role and the JESTER role, you can kill the Jester as the only one and get a free sidekick.]])
 
-		---------------------------------
-
-		-- maybe this language as well...
 		LANG.AddToLanguage("Deutsch", self.name, "Hellseher")
 		LANG.AddToLanguage("Deutsch", "info_popup_" .. self.name,
 			[[Du bist DER Hellseher!

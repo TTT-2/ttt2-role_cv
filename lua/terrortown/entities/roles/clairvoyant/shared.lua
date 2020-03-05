@@ -5,9 +5,9 @@ if SERVER then
 end
 
 function ROLE:PreInitialize()
-	self.color = Color(94, 76, 118, 255)
+	self.color = Color(215, 235, 10, 255)
 
-	self.abbr = "cv" -- abbreviation
+	self.abbr = "cv"
 	self.surviveBonus = 0 -- bonus multiplier for every survive while another player was killed
 	self.scoreKillsMultiplier = 1 -- multiplier for kill of player of another team
 	self.scoreTeamKillsMultiplier = -8 -- multiplier for teamkill
@@ -28,7 +28,7 @@ end
 function ROLE:Initialize()
 	roles.SetBaseRole(self, ROLE_INNOCENT)
 
-	if SERVER and JESTER and SIDEKICK then -- could also be done in initialize hook
+	if SERVER and JESTER and SIDEKICK then
 		hook.Add("TTT2SIKIAddSidekick", "CvSikiAtkHook", function(attacker, victim)
 			if attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER then
 				return true
@@ -39,48 +39,24 @@ function ROLE:Initialize()
 			local attacker = victim.jesterKiller
 
 			if IsValid(attacker) and attacker:IsPlayer() and attacker:IsActive()
-			and attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER
+				and attacker:GetSubRole() == ROLE_CLAIRVOYANT and victim:GetSubRole() == ROLE_JESTER
 			then
 				return true
 			end
 		end)
-	end
-
-	if CLIENT then
-		-- Role specific language elements
-		LANG.AddToLanguage("English", self.name, "Clairvoyant")
-		LANG.AddToLanguage("English", "info_popup_" .. self.name,
-			[[You are the Clairvoyant!
-			Play them all with your knowledge against each other!
-			Do not talk too much about your ability, otherwise you will quickly pay for it!]])
-		LANG.AddToLanguage("English", "body_found_" .. self.abbr, "This was a Clairvoyant...")
-		LANG.AddToLanguage("English", "search_role_" .. self.abbr, "This person was a Clairvoyant!")
-		LANG.AddToLanguage("English", "target_" .. self.name, "Clairvoyant")
-		LANG.AddToLanguage("English", "ttt2_desc_" .. self.name, [[The Clairvoyant is able to see whether a player is an innocent or a player has a special role.
-His goal is to survive the traitors as an innocent.
-
-In combination with the SIDEKICK role and the JESTER role, you can kill the Jester as the only one and get a free sidekick.]])
-
-		LANG.AddToLanguage("Deutsch", self.name, "Hellseher")
-		LANG.AddToLanguage("Deutsch", "info_popup_" .. self.name,
-			[[Du bist DER Hellseher!
-			Spiele sie ALLE mit deinem Wissen gegeneinander aus!
-			Gebe nicht zu viel von deiner Fähigkeit preis, sonst wirst du schnell dafür bezahlen!]])
-		LANG.AddToLanguage("Deutsch", "body_found_" .. self.abbr, "Er war ein Hellseher...")
-		LANG.AddToLanguage("Deutsch", "search_role_" .. self.abbr, "Diese Person war ein Hellseher!")
-		LANG.AddToLanguage("Deutsch", "target_" .. self.name, "Hellseher")
-		LANG.AddToLanguage("Deutsch", "ttt2_desc_" .. self.name, [[Der Hellseher kann sehen, ob ein Spieler ein normaler Unschuldiger ist
-oder ob ein Spieler eine spezielle Rolle hat.
-Sein Ziel ist es als ein Unschuldiger zu überleben.
-
-In Kombination mit der SIDEKICK Rolle und der JESTER Rolle bekommst du automatisch einen Sidekick, sobald du den Jester gekillt hast.]])
 	end
 end
 
 hook.Add("TTTUlxDynamicRCVars", "TTTUlxDynamicCvCVars", function(tbl)
 	tbl[ROLE_CLAIRVOYANT] = tbl[ROLE_CLAIRVOYANT] or {}
 
-	table.insert(tbl[ROLE_CLAIRVOYANT], {cvar = "ttt2_cv_visible", slider = true, min = 1, max = 100, desc = "Sets the percentage of visible player's roles"})
+	table.insert(tbl[ROLE_CLAIRVOYANT], {
+		cvar = "ttt2_cv_visible",
+		slider = true,
+		min = 1,
+		max = 100,
+		desc = "Sets the percentage of visible player's roles"
+	})
 end)
 
 local cachedTable = nil
@@ -112,7 +88,7 @@ if SERVER then
 	end)
 
 	hook.Add("TTTBeginRound", "TTT2CVBeginRound", function()
-		local plys = (IsValid(ply) and ply:IsPlayer() and ply:GetSubRole() == ROLE_CLAIRVOYANT) and {ply} or GetSubRoleFilter(ROLE_CLAIRVOYANT)
+		local plys = GetSubRoleFilter(ROLE_CLAIRVOYANT)
 		local tmp = {}
 
 		for _, v in ipairs(player.GetAll()) do

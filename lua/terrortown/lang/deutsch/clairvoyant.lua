@@ -1,4 +1,4 @@
-L = LANG.GetLanguageTableReference("deutsch")
+local L = LANG.GetLanguageTableReference("deutsch")
 
 -- GENERAL ROLE LANGUAGE STRINGS
 L[CLAIRVOYANT.name] = "Hellseher"
@@ -11,4 +11,4 @@ L["target_" .. CLAIRVOYANT.name] = "Hellseher"
 L["ttt2_desc_" .. CLAIRVOYANT.name] = [[Der Hellseher kann sehen, ob ein Spieler ein normaler Unschuldiger ist oder ob ein Spieler eine spezielle Rolle hat.
 Sein Ziel ist es als ein Unschuldiger zu überleben.
 
-In Kombination mit der SIDEKICK Rolle und der JESTER Rolle bekommst du automatisch einen Sidekick, sobald du den Jester gekillt hast.]]
+In Kombination mit der Sidekick Rolle und der Jester Rolle bekommst du automatisch einen Sidekick, sobald du den Jester gekillt hast.]]

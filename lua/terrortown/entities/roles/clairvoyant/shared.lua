@@ -10,10 +10,8 @@ function ROLE:PreInitialize()
 	self.abbr = "cv"
 	self.score.killsMultiplier = 2
 	self.score.teamKillsMultiplier = -8
-	-- enables special role filtering hook: 'TTT2_SpecialRoleFilter'
-	-- be careful: this role will be excepted from receiving every role as innocent
-	self.specialRoleFilter = true
-	self.unknownTeam = true -- player doesn't know their teammates
+
+	self.unknownTeam = true
 
 	self.defaultTeam = TEAM_INNOCENT
 	self.defaultEquipment = INNO_EQUIPMENT

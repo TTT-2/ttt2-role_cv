@@ -12,3 +12,6 @@ L["ttt2_desc_" .. CLAIRVOYANT.name] = [[Il Chiaroveggente può vedere se un gioc
 Il suo obiettivo è di sopravvivere ai traditori come innocente.
 
 Sei l'unico che può uccidere il Jester e uccidendolo lo trasformerai in tuo compagno.]]
+
+-- OTHER ROLE LANGUAGE STRINGS
+--L["label_cv_visible"] = "Percentage of visible player's roles"

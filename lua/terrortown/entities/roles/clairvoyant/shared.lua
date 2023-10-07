@@ -46,18 +46,6 @@ function ROLE:Initialize()
 	end
 end
 
-hook.Add("TTTUlxDynamicRCVars", "TTTUlxDynamicCvCVars", function(tbl)
-	tbl[ROLE_CLAIRVOYANT] = tbl[ROLE_CLAIRVOYANT] or {}
-
-	table.insert(tbl[ROLE_CLAIRVOYANT], {
-		cvar = "ttt2_cv_visible",
-		slider = true,
-		min = 1,
-		max = 100,
-		desc = "Sets the percentage of visible player's roles"
-	})
-end)
-
 local cachedTable = nil
 
 if SERVER then
@@ -127,6 +115,18 @@ if SERVER then
 end
 
 if CLIENT then
+	function ROLE:AddToSettingsMenu(parent)
+		local form = vgui.CreateTTT2Form(parent, "header_roles_additional")
+
+		form:MakeSlider({
+			serverConvar = "ttt2_cv_visible",
+			label = "label_cv_visible",
+			min = 1,
+			max = 100,
+			decimal = 0
+		})
+	end
+
 	hook.Add("TTTScoreboardRowColorForPlayer", "TTT2CVColoredScoreboard", function(ply)
 		local client = LocalPlayer()
 

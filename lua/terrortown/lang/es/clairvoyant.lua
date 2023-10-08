@@ -12,3 +12,6 @@ L["ttt2_desc_" .. CLAIRVOYANT.name] = [[El Clarividente es capaz de descifrar si
 Su objetivo es sobrevivir a los traidores en conjunto a los inocentes.
 
 En combinación con el rol SOCIO y el de JESTER, puedes asesinar al Jester únicamente y llevarte un Socio gratis.]]
+
+-- OTHER ROLE LANGUAGE STRINGS
+--L["label_cv_visible"] = "Percentage of visible player's roles"

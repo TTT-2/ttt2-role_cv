@@ -12,3 +12,6 @@ L["ttt2_desc_" .. CLAIRVOYANT.name] = [[The Clairvoyant is able to see whether a
 It's their goal to survive the traitors as an innocent.
 
 In combination with the Sidekick role and the Jester role, you can kill the Jester and get a free sidekick.]]
+
+-- OTHER ROLE LANGUAGE STRINGS
+L["label_cv_visible"] = "Percentage of visible player's roles"

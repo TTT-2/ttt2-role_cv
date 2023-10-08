@@ -12,3 +12,6 @@ L["ttt2_desc_" .. CLAIRVOYANT.name] = [[Der Hellseher kann sehen, ob ein Spieler
 Sein Ziel ist es als ein Unschuldiger zu überleben.
 
 In Kombination mit der Sidekick Rolle und der Jester Rolle bekommst du automatisch einen Sidekick, sobald du den Jester gekillt hast.]]
+
+-- OTHER ROLE LANGUAGE STRINGS
+L["label_cv_visible"] = "Prozent der sichtbaren Spielerrollen"

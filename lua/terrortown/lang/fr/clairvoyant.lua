@@ -10,4 +10,8 @@ L["search_role_" .. CLAIRVOYANT.abbr] = "Cette personne était un Clairvoyant!"
 L["target_" .. CLAIRVOYANT.name] = "Clairvoyant"
 L["ttt2_desc_" .. CLAIRVOYANT.name] = [[Le Clairvoyant est capable de voir si un joueur est innocent ou si un joueur a un rôle particulier.
 Son but est de survivre aux traîtres en tant qu'innocent.
+
 En combinaison avec le rôle d'Acolyte et le rôle du Bouffon, vous êtes le seul à pouvoir tuer le bouffon, et en le tuant, vous le transformerez en Acolyte.]]
+
+-- OTHER ROLE LANGUAGE STRINGS
+--L["label_cv_visible"] = "Percentage of visible player's roles"

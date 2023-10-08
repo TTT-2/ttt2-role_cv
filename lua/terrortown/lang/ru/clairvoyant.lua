@@ -12,3 +12,6 @@ L["ttt2_desc_" .. CLAIRVOYANT.name] = [[Ясновидящий может вид
 Его цель - выжить перед предателями как невиновный.
 
 В сочетании с ролью сообщника и ролью шута вы можете убить шута как единственного и получить бесплатного сообщника.]]
+
+-- OTHER ROLE LANGUAGE STRINGS
+--L["label_cv_visible"] = "Percentage of visible player's roles"
